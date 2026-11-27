@@ -1,28 +1,39 @@
-/** Sukhsa Export monogram: an "S" folded like an export crate. */
-export function LogoMark({ className = "size-9" }: { className?: string }) {
+import Image from "next/image";
+import logoSrc from "@/assets/brand/sukhsa-logo.png";
+
+/**
+ * The full Sukhsa Exports logo (monogram, name and tagline).
+ *
+ * Imported statically, so Next.js:
+ *  - gives it a content-hashed URL, cached by browsers and Vercel's CDN for a year,
+ *  - serves a resized AVIF/WebP copy at the size shown instead of the full PNG,
+ *  - knows its width/height, so the page never jumps while it loads.
+ * It sits on a white card so the black "Exports" text stays readable in dark mode.
+ * (The small browser-tab icon is src/app/icon.png, the monogram only.)
+ */
+export function BrandLogo({
+  width = 200,
+  priority = false,
+  className = "",
+}: {
+  width?: number;
+  priority?: boolean;
+  className?: string;
+}) {
   return (
-    <svg viewBox="0 0 40 40" className={className} aria-hidden="true">
-      <rect width="40" height="40" rx="11" className="fill-brand" />
-      <path
-        d="M27 13.5c-1.6-1.7-4-2.5-6.8-2.5-4 0-6.7 2-6.7 5 0 6.4 13.5 3.6 13.5 9.6 0 3-2.9 5.4-7.1 5.4-3 0-5.5-1-7.2-2.9"
-        fill="none"
-        stroke="white"
-        strokeWidth="3.2"
-        strokeLinecap="round"
+    <span className={`inline-block rounded-2xl border border-line bg-white px-3 py-2 shadow-sm ${className}`}>
+      <Image
+        src={logoSrc}
+        alt="Sukhsa Exports – Your Trade Partner From INDIA"
+        sizes={`${width}px`}
+        priority={priority}
+        style={{ width, height: "auto" }}
       />
-      <circle cx="29.5" cy="29.5" r="2.6" className="fill-accent" />
-    </svg>
+    </span>
   );
 }
 
-export function Logo() {
-  return (
-    <div className="flex items-center gap-3">
-      <LogoMark />
-      <div className="leading-tight">
-        <div className="text-[15px] font-bold tracking-tight text-ink">Sukhsa Export</div>
-        <div className="text-xs font-medium text-ink-faint">Admin & ERP</div>
-      </div>
-    </div>
-  );
+/** Header logo: the full logo at header size. */
+export function Logo({ priority = false }: { priority?: boolean }) {
+  return <BrandLogo width={150} priority={priority} />;
 }

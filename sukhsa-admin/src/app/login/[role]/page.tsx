@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { ArrowLeft, Info, KeyRound, User } from "lucide-react";
-import { LogoMark } from "@/components/Logo";
+import { BrandLogo } from "@/components/Logo";
 import { ROLES, roleBySlug } from "@/lib/roles";
 
 export function generateStaticParams() {
@@ -11,7 +11,7 @@ export function generateStaticParams() {
 
 export async function generateMetadata({ params }: { params: Promise<{ role: string }> }): Promise<Metadata> {
   const role = roleBySlug((await params).role);
-  return { title: role ? `${role.title} sign in · Sukhsa Export` : "Sign in · Sukhsa Export" };
+  return { title: role ? `${role.title} sign in · Sukhsa Exports` : "Sign in · Sukhsa Exports" };
 }
 
 function GoogleIcon() {
@@ -41,16 +41,13 @@ export default async function LoginPage({ params }: { params: Promise<{ role: st
         </Link>
 
         <div className="rounded-3xl border border-line bg-surface p-6 shadow-soft sm:p-8">
-          <div className="mb-7 flex items-center gap-3">
-            <LogoMark className="size-10" />
-            <div className="leading-tight">
-              <div className="text-xs font-semibold uppercase tracking-wider text-ink-faint">Sukhsa Export</div>
-              <h1 className="flex items-center gap-2 text-xl font-bold text-ink">
-                <Icon className="size-5 text-brand" />
-                {role.title} sign in
-              </h1>
-            </div>
+          <div className="mb-6 flex justify-center">
+            <BrandLogo width={200} priority />
           </div>
+          <h1 className="mb-6 flex items-center justify-center gap-2 text-xl font-bold text-ink">
+            <Icon className="size-5 text-brand" />
+            {role.title} sign in
+          </h1>
 
           {role.method === "google" ? (
             <div className="space-y-4">

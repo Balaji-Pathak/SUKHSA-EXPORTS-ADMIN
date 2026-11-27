@@ -43,7 +43,7 @@ export default function Welcome() {
 
       <div className="relative mx-auto flex min-h-dvh max-w-7xl flex-col px-4 sm:px-8">
         <header className="flex items-center justify-between gap-4 py-6">
-          <Logo />
+          <Logo priority />
           <DbStatus />
         </header>
 
@@ -59,7 +59,7 @@ export default function Welcome() {
             >
               Welcome to the
               <br />
-              <span className="text-brand">Sukhsa Export</span> Admin Panel
+              <span className="text-brand">Sukhsa Exports</span> Admin Panel
             </h1>
             <p className="animate-rise mt-5 max-w-lg text-base leading-relaxed text-ink-soft sm:text-lg" style={{ animationDelay: "100ms" }}>
               One company-owned place for employees, attendance, payroll and production. Choose how you want to sign in.
@@ -73,7 +73,7 @@ export default function Welcome() {
 
             <p className="mt-6 flex items-center gap-2 text-xs text-ink-faint">
               <Lock className="size-3.5" />
-              Access is limited to approved Sukhsa Export staff. Every sign-in is checked against the central user list.
+              Access is limited to approved Sukhsa Exports staff. Every sign-in is checked against the central user list.
             </p>
           </section>
 
@@ -83,7 +83,7 @@ export default function Welcome() {
         </main>
 
         <footer className="flex flex-col gap-2 border-t border-line py-6 text-xs text-ink-faint sm:flex-row sm:items-center sm:justify-between">
-          <span>© {new Date().getFullYear()} Sukhsa Export. Company-owned system.</span>
+          <span>© {new Date().getFullYear()} Sukhsa Exports. Company-owned system.</span>
           <span>Need access? Contact your Super Admin.</span>
         </footer>
       </div>

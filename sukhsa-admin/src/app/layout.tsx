@@ -11,8 +11,8 @@ const jakarta = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "Sukhsa Export · Admin Panel",
-  description: "Central Admin & ERP for Sukhsa Export",
+  title: "Sukhsa Exports · Admin Panel",
+  description: "Central Admin & ERP for Sukhsa Exports",
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
