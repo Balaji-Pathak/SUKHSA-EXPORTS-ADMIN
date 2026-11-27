@@ -1,0 +1,40 @@
+{
+  "name": "sukhsa-admin",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "typecheck": "tsc --noEmit",
+    "test": "tsx --test src/lib/payroll.test.ts",
+    "sync": "npm run migrate && npm run central:build",
+    "central:build": "tsx scripts/build-central.ts",
+    "payroll:month": "tsx scripts/payroll-month.ts",
+    "mongo:ping": "tsx scripts/ping-mongo.ts",
+    "migrate:dry": "tsx scripts/migrate-firestore.ts --dry-run",
+    "migrate": "tsx scripts/migrate-firestore.ts",
+    "migrate:verify": "tsx scripts/verify-migration.ts",
+    "migrate:inspect": "tsx scripts/inspect-schema.ts"
+  },
+  "dependencies": {
+    "@tailwindcss/postcss": "^4.3.5",
+    "lucide-react": "^1.82.0",
+    "mongodb": "^6.16.0",
+    "next": "^15.3.3",
+    "postcss": "^8.5.34",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "server-only": "^0.0.1",
+    "tailwindcss": "^4.3.5"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.0",
+    "@types/react": "^19.1.0",
+    "@types/react-dom": "^19.1.0",
+    "dotenv": "^16.5.0",
+    "firebase-admin": "^13.4.0",
+    "tsx": "^4.19.4",
+    "typescript": "^5.8.3"
+  }
+}
