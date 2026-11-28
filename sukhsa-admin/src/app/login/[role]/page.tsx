@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import { ArrowLeft, Info, KeyRound, User } from "lucide-react";
 import { BrandLogo } from "@/components/Logo";
 import { ROLES, roleBySlug } from "@/lib/roles";
+import { signIn } from "@/auth";
 
 export function generateStaticParams() {
   return ROLES.map((r) => ({ role: r.slug }));
@@ -54,14 +55,20 @@ export default async function LoginPage({ params }: { params: Promise<{ role: st
               <p className="text-sm text-ink-soft">
                 Sign in with your Google account. Only emails approved by a Super Admin can open the {role.title.toLowerCase()} dashboard.
               </p>
-              <button
-                type="button"
-                disabled
-                className="flex w-full items-center justify-center gap-3 rounded-xl border border-line bg-surface px-4 py-3 text-sm font-semibold text-ink shadow-sm transition enabled:hover:border-brand/40 disabled:cursor-not-allowed disabled:opacity-60"
+              <form
+                action={async () => {
+                  "use server";
+                  await signIn("google", { redirectTo: "/dashboard" });
+                }}
               >
-                <GoogleIcon />
-                Continue with Google
-              </button>
+                <button
+                  type="submit"
+                  className="flex w-full items-center justify-center gap-3 rounded-xl border border-line bg-surface px-4 py-3 text-sm font-semibold text-ink shadow-sm transition hover:border-brand/40 hover:shadow-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand active:scale-[0.99]"
+                >
+                  <GoogleIcon />
+                  Continue with Google
+                </button>
+              </form>
             </div>
           ) : (
             <form className="space-y-4">
@@ -85,10 +92,12 @@ export default async function LoginPage({ params }: { params: Promise<{ role: st
             </form>
           )}
 
-          <div className="mt-6 flex gap-2.5 rounded-xl bg-accent-soft p-3 text-xs leading-relaxed text-ink-soft">
-            <Info className="mt-0.5 size-4 shrink-0 text-accent" />
-            <span>Sign-in is being connected to the central user list. This screen is a preview until then.</span>
-          </div>
+          {role.method === "password" && (
+            <div className="mt-6 flex gap-2.5 rounded-xl bg-accent-soft p-3 text-xs leading-relaxed text-ink-soft">
+              <Info className="mt-0.5 size-4 shrink-0 text-accent" />
+              <span>Gate Desk sign-in is coming soon. Guards keep using attendance.sukhsa.in for now.</span>
+            </div>
+          )}
         </div>
 
         <p className="mt-6 text-center text-xs text-ink-faint">

@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
+import { auth } from "@/auth";
 import { ArrowRight, Lock } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import { Scene3D } from "@/components/welcome/Scene3D";
@@ -36,7 +38,10 @@ function RoleCard({ role, index }: { role: RoleInfo; index: number }) {
   );
 }
 
-export default function Welcome() {
+export default async function Welcome() {
+  // Signed in already? Skip the welcome page.
+  if ((await auth())?.user?.role) redirect("/dashboard");
+
   return (
     <div className="bg-mesh relative min-h-dvh overflow-hidden">
       <div className="bg-grid pointer-events-none absolute inset-0" />
