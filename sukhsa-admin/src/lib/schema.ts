@@ -3,6 +3,7 @@
  * MongoDB validators and indexes. Every ERP module links to employees by employeeId.
  */
 import type { CreateIndexesOptions, Db, Document, IndexSpecification } from "mongodb";
+import type { DayResult } from "./payroll";
 
 export const COLLECTIONS = {
   employees: "employees",
@@ -11,7 +12,48 @@ export const COLLECTIONS = {
   users: "users",
   authSalts: "auth_salts",
   settings: "settings",
+  auditLog: "audit_log",
+  payrollRuns: "payroll_runs",
 } as const;
+
+/** One entry per change made through the panel: who, what, when, before/after. */
+export interface AuditEntry {
+  _id?: import("mongodb").ObjectId;
+  at: Date;
+  actor: { id: string; email: string; role: string };
+  action: string; // e.g. "employee.update"
+  entity: "employee" | "attendance" | "theka" | "user" | "payroll" | "guard";
+  entityId: string;
+  reason?: string;
+  changes?: Record<string, { from: unknown; to: unknown }>;
+}
+
+/** A locked month can no longer have its attendance or Theka changed. */
+/**
+ * Monthly payroll approval (one document per month).
+ *   draft -> submitted (Admin) -> approved (Super Admin) -> paid (Admin / Super Admin)
+ *   submitted -> rejected (Super Admin sends back with a note) -> submitted again
+ *   approved / paid -> draft (Super Admin reopens)
+ * While submitted, approved or paid, that month's attendance and Theka are frozen.
+ */
+export type PayrollRunStatus = "draft" | "submitted" | "rejected" | "approved" | "paid";
+export interface PayrollRunStamp {
+  by: string;
+  at: Date;
+  total: number;
+  employees: number;
+}
+export interface PayrollRun {
+  _id: string; // "YYYY-MM"
+  status: PayrollRunStatus;
+  submitted?: PayrollRunStamp | null;
+  approved?: PayrollRunStamp | null;
+  paid?: PayrollRunStamp | null;
+  /** Latest note from the CEO (e.g. why it was sent back). */
+  note?: string | null;
+  events: { action: string; by: string; role: string; at: Date; note?: string | null; total?: number }[];
+  updatedAt: Date;
+}
 
 export type EmployeeCategory = "permanent" | "temporary";
 export type UserRole = "super_admin" | "admin" | "supervisor" | "guard";
@@ -37,6 +79,8 @@ export interface Employee {
   breakMinutes: number;
   active: boolean;
   sheets?: { individualSheetId?: string; individualSheetUrl?: string };
+  /** The supervisor (users._id, e.g. "admin:lead@gmail.com") whose team this employee is in. */
+  supervisorId?: string | null;
   createdAt: Date;
   updatedAt: Date;
   source?: SourceRef;
@@ -51,17 +95,16 @@ export interface AttendanceRecord {
   month: string; // YYYY-MM
   inTime: string; // HH:MM
   outTime: string | null;
+  /** Total Away time (Pause -> Resume) in seconds. */
   pausedSeconds: number;
+  /** "on_duty" while inside, then "completed" / "short_shift" (payroll status). "open" = manual entry without Out. */
   status: string;
+  /** Gate Desk live timer state (spec §4.5). */
+  startedAtMs?: number | null;
+  isPaused?: boolean;
+  pausedAtMs?: number | null;
   /** Computed with src/lib/payroll.ts. Null while the shift is still open. */
-  calc: {
-    isSunday: boolean;
-    grossMinutes: number;
-    breakMinutes: number;
-    netMinutes: number;
-    presentDays: 0 | 1;
-    hMinutes: number;
-  } | null;
+  calc: Omit<DayResult, "date"> | null;
   /** Values the old app stored, kept for comparison only. */
   legacy?: Record<string, unknown>;
   syncedToSheet: boolean;
@@ -84,7 +127,11 @@ export interface User {
   displayName?: string;
   email?: string; // admins sign in with Google
   username?: string; // guards sign in with username + password
-  passwordHash?: string; // PBKDF2-SHA256, copied unchanged from the attendance app
+  passwordHash?: string; // PBKDF2-SHA256 (100k, salt "gatelog:<saltHex>"), same as the attendance app
+  passwordSalt?: string; // hex; older guards keep theirs in auth_salts (_id = username)
+  failedLogins?: number;
+  lockedUntil?: Date | null;
+  lastLoginAt?: Date;
   active: boolean;
   addedBy?: string;
   createdAt: Date;
@@ -156,9 +203,16 @@ export const VALIDATORS: Record<string, Document> = {
 };
 
 export const INDEXES: Record<string, [IndexSpecification, CreateIndexesOptions][]> = {
+  [COLLECTIONS.auditLog]: [
+    [{ entity: 1, entityId: 1, at: -1 }, { name: "entity_history" }],
+    [{ at: -1 }, { name: "recent" }],
+  ],
   [COLLECTIONS.employees]: [
-    [{ empCode: 1 }, { unique: true, name: "empCode_unique" }],
+    // Spec §4.2: a code may be reused only if its previous owner is inactive.
+    [{ empCode: 1 }, { unique: true, name: "empCode_unique_active", partialFilterExpression: { active: true } }],
+    [{ empCode: 1, active: 1 }, { name: "empCode_lookup" }],
     [{ active: 1, category: 1 }, { name: "active_category" }],
+    [{ supervisorId: 1 }, { name: "supervisor_team", partialFilterExpression: { supervisorId: { $type: "string" } } }],
   ],
   [COLLECTIONS.attendance]: [
     [{ employeeId: 1, date: 1 }, { unique: true, name: "employee_date_unique" }],
@@ -173,9 +227,19 @@ export const INDEXES: Record<string, [IndexSpecification, CreateIndexesOptions][
   ],
 };
 
+/** Indexes replaced by newer rules; removed by ensureSchema. */
+const OBSOLETE_INDEXES: Record<string, string[]> = {
+  [COLLECTIONS.employees]: ["empCode_unique"],
+};
+
 /** Create collections (with validators) and indexes. Safe to run repeatedly. */
 export async function ensureSchema(db: Db): Promise<void> {
   const existing = new Set((await db.listCollections({}, { nameOnly: true }).toArray()).map((c) => c.name));
+  for (const [name, idx] of Object.entries(OBSOLETE_INDEXES)) {
+    if (!existing.has(name)) continue;
+    const have = new Set((await db.collection(name).indexes()).map((i) => i.name));
+    for (const n of idx) if (have.has(n)) await db.collection(name).dropIndex(n);
+  }
   for (const name of Object.values(COLLECTIONS)) {
     const validator = VALIDATORS[name];
     if (!existing.has(name)) {

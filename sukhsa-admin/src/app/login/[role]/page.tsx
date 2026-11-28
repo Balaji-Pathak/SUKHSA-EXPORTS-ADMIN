@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { ArrowLeft, Info, KeyRound, User } from "lucide-react";
+import { ArrowLeft, Info } from "lucide-react";
+import { GuardLoginForm } from "@/components/GuardLoginForm";
 import { BrandLogo } from "@/components/Logo";
 import { ROLES, roleBySlug } from "@/lib/roles";
 import { signIn } from "@/auth";
@@ -71,31 +72,16 @@ export default async function LoginPage({ params }: { params: Promise<{ role: st
               </form>
             </div>
           ) : (
-            <form className="space-y-4">
-              <label className="block">
-                <span className="mb-1.5 block text-sm font-medium text-ink">Username</span>
-                <span className="flex items-center gap-2 rounded-xl border border-line bg-surface-2 px-3 focus-within:border-brand">
-                  <User className="size-4 text-ink-faint" />
-                  <input name="username" autoComplete="username" disabled className="w-full bg-transparent py-3 text-sm text-ink outline-none placeholder:text-ink-faint disabled:cursor-not-allowed" placeholder="gate-desk" />
-                </span>
-              </label>
-              <label className="block">
-                <span className="mb-1.5 block text-sm font-medium text-ink">Password</span>
-                <span className="flex items-center gap-2 rounded-xl border border-line bg-surface-2 px-3 focus-within:border-brand">
-                  <KeyRound className="size-4 text-ink-faint" />
-                  <input name="password" type="password" autoComplete="current-password" disabled className="w-full bg-transparent py-3 text-sm text-ink outline-none placeholder:text-ink-faint disabled:cursor-not-allowed" placeholder="••••••••" />
-                </span>
-              </label>
-              <button type="submit" disabled className="w-full rounded-xl bg-brand px-4 py-3 text-sm font-semibold text-white transition disabled:cursor-not-allowed disabled:opacity-60">
-                Sign in to Gate Desk
-              </button>
-            </form>
+            <div className="space-y-4">
+              <p className="text-sm text-ink-soft">Use the guard username and password created by your Admin.</p>
+              <GuardLoginForm />
+            </div>
           )}
 
           {role.method === "password" && (
-            <div className="mt-6 flex gap-2.5 rounded-xl bg-accent-soft p-3 text-xs leading-relaxed text-ink-soft">
-              <Info className="mt-0.5 size-4 shrink-0 text-accent" />
-              <span>Gate Desk sign-in is coming soon. Guards keep using attendance.sukhsa.in for now.</span>
+            <div className="mt-6 flex gap-2.5 rounded-xl bg-surface-2 p-3 text-xs leading-relaxed text-ink-soft">
+              <Info className="mt-0.5 size-4 shrink-0 text-ink-faint" />
+              <span>Forgot the password? Ask an Admin to reset it under Guards.</span>
             </div>
           )}
         </div>

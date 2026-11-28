@@ -62,6 +62,23 @@ body {
   color: var(--ink);
 }
 
+/* Tell the browser which theme we're in, so its built-in controls (time/date/month
+   pickers, dropdown lists, scrollbars) are drawn in matching colours. */
+:root { color-scheme: light; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { color-scheme: dark; }
+}
+
+/* Form fields: labels stack their content, and grid cells may shrink
+   (time/date inputs otherwise refuse to get narrower and overflow). */
+form label { display: block; min-width: 0; }
+input[type="time"],
+input[type="date"],
+input[type="month"] { min-width: 0; }
+/* Picker icons: clickable, slightly muted until hovered */
+input::-webkit-calendar-picker-indicator { cursor: pointer; opacity: 0.75; }
+input::-webkit-calendar-picker-indicator:hover { opacity: 1; }
+
 /* Soft background glow + fine grid */
 .bg-mesh {
   background:
@@ -131,6 +148,13 @@ body {
   to { opacity: 1; transform: none; }
 }
 .animate-float { animation: float 6s ease-in-out infinite; }
+
+/* Scrollable areas without a visible scrollbar (sidebar, menus, tab strips) */
+.no-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+
+@keyframes slide-in { from { transform: translateX(-100%); } to { transform: none; } }
+.animate-slide-in { animation: slide-in 0.22s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
 .animate-rise { animation: rise 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
 
 @media (prefers-reduced-motion: reduce) {

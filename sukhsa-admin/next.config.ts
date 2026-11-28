@@ -1,6 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Lets a production build run in a separate folder while `npm run dev` is running.
+  distDir: process.env.NEXT_DIST_DIR || ".next",
   // The MongoDB driver must run on the Node.js server, never in the browser bundle.
   serverExternalPackages: ["mongodb"],
   images: {

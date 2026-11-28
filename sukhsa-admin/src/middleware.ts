@@ -8,5 +8,5 @@ import authConfig from "./auth.config";
 export default NextAuth(authConfig).auth;
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/admin/:path*", "/supervisor/:path*"],
+  matcher: ["/dashboard/:path*", "/ceo/:path*", "/admin/:path*", "/supervisor/:path*", "/gate/:path*"],
 };
